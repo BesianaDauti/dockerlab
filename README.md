@@ -39,7 +39,7 @@ This project was built as a systems programming assignment demonstrating:
 ---
 
 ### Timeout Test
-![Timeout](images/test-timeout.png)
+![Timeout](images/test timeout.png)
 > Infinite loop submitted by user1 — the system automatically terminates execution after 10 seconds and returns a timeout error.
 
 ---
@@ -49,33 +49,41 @@ This project was built as a systems programming assignment demonstrating:
 > Active Docker containers — each logged-in user receives their own isolated container with CPU and memory limits.
 
 ## Architecture
-
-         Browser
-            │
-            ▼
-┌─────────────────────────────┐
-│      Frontend (HTML/JS)     │  ← Login, code editor, language select, results panel
-└────────────┬────────────────┘
-             │ HTTP (REST)
-             ▼
-┌─────────────────────────────┐
-│   Backend (ASP.NET Core)    │
-│  ┌──────────────────────┐   │
-│  │   AuthController     │   │  ← Login/logout, session management
-│  │   ExecuteController  │   │  ← Receive code, forward to container
-│  │   DockerService      │   │  ← docker run / docker kill / docker ps
-│  └──────────────────────┘   │
-└────────────┬────────────────┘
-             │ Docker SDK / CLI
-             ▼
-┌─────────────────────────────┐
-│   Per-User Docker Container │
-│  ┌──────────────────────┐   │
-│  │     worker.py        │   │  ← HTTP server inside container
-│  │  (Python + Roslyn)   │   │  ← Accepts code, executes, returns result
-│  └──────────────────────┘   │
-│  Limits: 256MB RAM, 0.5 CPU │
-└─────────────────────────────┘
+...
+┌─────────────────────────────────────────────────────────┐
+│                        BROWSER                          │
+│              Login · Editor · Rezultati                 │
+└──────────────────────┬──────────────────────────────────┘
+                       │ HTTP REST
+                       ▼
+┌─────────────────────────────────────────────────────────┐
+│               BACKEND  (ASP.NET Core)                   │
+│                                                         │
+│  ┌─────────────────┐      ┌──────────────────────────┐  │
+│  │ AuthController  │      │   ExecuteController      │  │
+│  │ Login · Logout  │      │  Merr kod · Dërgon te    │  │
+│  │ Session         │      │  container               │  │
+│  └────────┬────────┘      └────────────┬─────────────┘  │
+│           │                            │                 │
+│           └──────────┬─────────────────┘                 │
+│                      ▼                                   │
+│           ┌─────────────────────┐                        │
+│           │    DockerService    │                        │
+│           │ run · kill · ps     │                        │
+│           └─────────────────────┘                        │
+└──────────────────────┬──────────────────────────────────┘
+                       │ Docker API
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+┌──────────────┐ ┌──────────────┐ ┌──────────────┐
+│ Container    │ │ Container    │ │ Container    │
+│   User 1     │ │   User 2     │ │   User N     │
+│              │ │              │ │              │
+│  worker.py   │ │  worker.py   │ │  worker.py   │
+│  Python · C# │ │  Python · C# │ │  Python · C# │
+│  256MB·0.5CPU│ │  256MB·0.5CPU│ │  256MB·0.5CPU│
+└──────────────┘ └──────────────┘ └──────────────┘
+...
 
 ## Request Flow
 
@@ -86,7 +94,7 @@ This project was built as a systems programming assignment demonstrating:
 5. Browser  →  POST /api/auth/logout       →  Backend runs docker rm -f <container>
 
 ## Project Structure
-
+...
 dockerlab/
 ├── backend/                        # ASP.NET Core Web API
 │   ├── Controllers/
@@ -108,7 +116,7 @@ dockerlab/
 │   └── style.css                   # Styling
 │
 └── README.md
-
+...
 ## Features
 
 Per-user isolation - Each user gets a dedicated Docker container
@@ -148,11 +156,11 @@ python3 -m http.server 3000
 ## Configuration
 
 In backend/Services/DockerService.cs, you can adjust container limits:
-// Memory limit
+Memory limit
 "--memory", "256m",
-// CPU limit
+CPU limit
 "--cpus", "0.5",
-// Execution timeout (in worker.py)
+Execution timeout (in worker.py)
 TIMEOUT_SECONDS = 10
 
 ## API Reference
@@ -170,7 +178,6 @@ Response: { "output": "hello\n", "error": null, "exitCode": 0 }
 ## Test Scenarios
 
 Scenario 1 - Normal execution
-# Python
 print("Hello from container!")
 for i in range(5):
     print(i)
@@ -178,11 +185,11 @@ for i in range(5):
 Scenario 2 - Timeout (Infinite loop)
 while True:
     pass
-# Expected: { "error": "Execution timed out after 10 seconds" }
+// Expected: { "error": "Execution timed out after 10 seconds" }
 
 Scenario 3 - Runtime exception
 x = 1 / 0
-# Expected: ZeroDivisionError traceback in output
+// Expected: ZeroDivisionError traceback in output
 
 Scenario 4 - Compile Error
 Console.WriteLin("missing parenthesis"
@@ -190,11 +197,11 @@ Console.WriteLin("missing parenthesis"
 
 Scenario 5 - Memory limit exceeded
 x = " " * (300 * 1024 * 1024)  # 300MB — exceeds 256MB limit
-# Expected: container OOM kill or memory error
+// Expected: container OOM kill or memory error
 
 Scenario 6 - Auto-recovery after docker kill
 docker kill dockerlab-user1
-# Then send code from user1's browser → backend recreates container → code executes
+// Then send code from user1's browser → backend recreates container → code executes
 
 ## Docker Commands Reference
 
