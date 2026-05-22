@@ -39,7 +39,7 @@ This project was built as a systems programming assignment demonstrating:
 ---
 
 ### Timeout Test
-![Timeout](images/test timeout.png)
+![Timeout](images/test-timeout.png)
 > Infinite loop submitted by user1 — the system automatically terminates execution after 10 seconds and returns a timeout error.
 
 ---
@@ -129,6 +129,7 @@ Multi language - Supports Python and C# execution
 Multi user - Tested with 5 concurrent users, isolated execution
 ```
 ## Getting Started
+```
 Prerequisites
 • Docker(v20+)
 • .NET SDK 8.0+
@@ -150,11 +151,12 @@ dotnet run
 Open frontend/index.html directly in your browser, or serve it with any static server:
 cd frontend
 npx serve .
-# or
+or
 python3 -m http.server 3000
+```
 
 ## Configuration
-
+```
 In backend/Services/DockerService.cs, you can adjust container limits:
 Memory limit
 "--memory", "256m",
@@ -162,9 +164,9 @@ CPU limit
 "--cpus", "0.5",
 Execution timeout (in worker.py)
 TIMEOUT_SECONDS = 10
-
+```
 ## API Reference
-
+```
 POST /api/auth/login
 
 Request:  { "username": "user1", "password": "pass1" }
@@ -179,9 +181,9 @@ POST /api/execute
 
 Request:  { "token": "...", "code": "print('hello')", "language": "python" }
 Response: { "output": "hello\n", "error": null, "exitCode": 0 }
-
+```
 ## Test Scenarios
-
+```
 Scenario 1 - Normal execution
 print("Hello from container!")
 for i in range(5):
@@ -207,9 +209,9 @@ x = " " * (300 * 1024 * 1024)  # 300MB — exceeds 256MB limit
 Scenario 6 - Auto-recovery after docker kill
 docker kill dockerlab-user1
 // Then send code from user1's browser → backend recreates container → code executes
-
+```
 ## Docker Commands Reference
-
+```
 - View running containers
 docker ps
 - View resource usage
@@ -220,9 +222,9 @@ docker kill <container_id>
 docker container prune
 - View logs of a container
 docker logs <container_id>
-
+```
 ## Security Considerations
-
+```
 This project is designed for educational use. For production consider:
 1. Replace plaintext credentials with hashed passwords.
 2. Use JWT with proper expiry instead of simple tokens
@@ -231,17 +233,18 @@ This project is designed for educational use. For production consider:
 5. Add rate limiting to the execute endpoint
 6. Run worker as non-root user inside container
 7. Use seccomp/AppArmor profiles for syscall filtering
-
+```
 ## Tech Stack
-
+```
 Frontend - HTML5, CSS3, JavaScript
 Backend - ASP.NET Core 8, C#
 Worker - Python 3.11, Flask/HTTP server
 Runtime - Docker Engine
 C# Execution - .NET SDK
 Container Comms - HTTP (loopback port per container)
-
+```
 ## Author
-
+```
 Besiana Dauti
 Computer Science student focused on backend systems, cloud infrastructure, and distributed applications.
+```
