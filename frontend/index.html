@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="sq">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DockerCodeLabs</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="login-screen">
+      <h1>🐳 Docker Code Lab</h1>
+      <input id="inp-user" placeholder="Username" value="" />
+      <!--user1-user5 pass1-pass5-->
+      <input id="inp-pass" placeholder="Password" type="password" value="" />
+      <button onclick="login()">Login</button>
+      <div id="login-error" style="color: #e74c3c; margin-top: 10px"></div>
+    </div>
+    <div id="editor-screen" class="hidden">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+        "
+      >
+        <h1>🐳 Docker Code Lab</h1>
+        <div>
+          <span id="lbl-user" class="info"></span>
+          <button id="btn-logout" onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <select id="lang-select">
+          <option value="python">🐍 Python</option>
+          <option value="csharp">⚙️ C#</option>
+        </select>
+        <button onclick="execute()">▶ Execute</button>
+        <button
+          onclick="clearResult()"
+          style="background: #555; margin-left: 8px"
+        >
+          🗑 Clear
+        </button>
+      </div>
+
+      <textarea
+        id="code-editor"
+        placeholder="Write code here..."
+        autocomplete="off"
+        spellcheck="false"
+      ></textarea>
+
+      <div id="result-panel">
+        <span class="info">← Results appears here</span>
+      </div>
+    </div>
+
+    <script>
+      const API = "http://localhost:5050/api";
+      let token = sessionStorage.getItem("token") || "";
+      let username = sessionStorage.getItem("username") || "";
+
+      if (token) showEditor();
+
+      async function login() {
+        const u = document.getElementById("inp-user").value;
+        const p = document.getElementById("inp-pass").value;
+        try {
+          const r = await fetch(`${API}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p }),
+          });
+          const data = await r.json();
+          if (!r.ok) {
+            document.getElementById("login-error").textContent = data.error;
+            return;
+          }
+          token = data.token;
+          username = data.username;
+          sessionStorage.setItem("token", token);
+          sessionStorage.setItem("username", username);
+          showEditor();
+        } catch (e) {
+          document.getElementById("login-error").textContent =
+            "Backend not active!";
+        }
+      }
+
+      async function logout() {
+        await fetch(`${API}/auth/logout`, {
+          method: "POST",
+          headers: { "X-Token": token },
+        });
+        sessionStorage.clear();
+        token = "";
+        username = "";
+        document.getElementById("editor-screen").classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+        document.getElementById("result-panel").innerHTML =
+          '<span class="info">← Result show here</span>';
+      }
+
+      window.addEventListener("beforeunload", () => {
+        if (token)
+          navigator.sendBeacon(`${API}/auth/logout`, JSON.stringify({ token }));
+      });
+
+      async function execute() {
+        const code = document.getElementById("code-editor").value;
+        const lang = document.getElementById("lang-select").value;
+        const panel = document.getElementById("result-panel");
+        panel.innerHTML = '<span class="info">⏳ Executing...</span>';
+
+        try {
+          const r = await fetch(`${API}/execute`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Token": token },
+            body: JSON.stringify({ code, language: lang }),
+          });
+          const data = await r.json();
+
+          if (data.timeout) {
+            panel.innerHTML = `<span class="error">⏰ TIMEOUT — ${data.error}</span>`;
+          } else if (data.error) {
+            panel.innerHTML = `<span class="error">❌ Error:\n${data.error}</span>`;
+          } else if (data.exit_code !== 0) {
+            panel.innerHTML = `<span class="error">💥 Exit ${data.exit_code}:\n${data.stderr || data.stdout}</span>`;
+          } else {
+            panel.innerHTML = `<span class="success">✅ Output:\n${data.stdout || "(pa output)"}</span>`;
+            if (data.stderr)
+              panel.innerHTML += `\n<span class="error">Stderr: ${data.stderr}</span>`;
+          }
+        } catch (e) {
+          panel.innerHTML = `<span class="error">🔌 Connecting error: ${e.message}</span>`;
+        }
+      }
+
+      function clearResult() {
+        document.getElementById("result-panel").innerHTML =
+          '<span class="info">← Result shows here</span>';
+      }
+
+      function showEditor() {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("editor-screen").classList.remove("hidden");
+        document.getElementById("lbl-user").textContent = `👤 ${username}`;
+        document.getElementById("code-editor").value = 'print("Hello!")';
+      }
+    </script>
+  </body>
+</html>
