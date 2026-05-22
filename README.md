@@ -49,7 +49,7 @@ This project was built as a systems programming assignment demonstrating:
 > Active Docker containers — each logged-in user receives their own isolated container with CPU and memory limits.
 
 ## Architecture
-...
+```
 ┌─────────────────────────────────────────────────────────┐
 │                        BROWSER                          │
 │              Login · Editor · Rezultati                 │
@@ -83,18 +83,18 @@ This project was built as a systems programming assignment demonstrating:
 │  Python · C# │ │  Python · C# │ │  Python · C# │
 │  256MB·0.5CPU│ │  256MB·0.5CPU│ │  256MB·0.5CPU│
 └──────────────┘ └──────────────┘ └──────────────┘
-...
+```
 
 ## Request Flow
-
+```
 1. Browser  →  POST /api/auth/login         →  Backend creates Docker container for user
 2. Browser  →  POST /api/execute            →  Backend forwards code to container HTTP port
 3. Container executes code with timeout
 4. Container  →  JSON result               →  Backend  →  Browser displays output
 5. Browser  →  POST /api/auth/logout       →  Backend runs docker rm -f <container>
-
+```
 ## Project Structure
-...
+```
 dockerlab/
 ├── backend/                        # ASP.NET Core Web API
 │   ├── Controllers/
@@ -116,9 +116,9 @@ dockerlab/
 │   └── style.css                   # Styling
 │
 └── README.md
-...
+```
 ## Features
-
+```
 Per-user isolation - Each user gets a dedicated Docker container
 Timeout enforcement - Infinite loops killed after configurable timeout
 Resource limits - CPU and memory limits per container
@@ -127,7 +127,7 @@ Cleanup on logout - Container is removed on logout or borwser close
 Error handling - Compile errors, runtime exceptions, OOM, and timeouts all return readable messages
 Multi language - Supports Python and C# execution
 Multi user - Tested with 5 concurrent users, isolated execution
-
+```
 ## Getting Started
 Prerequisites
 • Docker(v20+)
@@ -166,12 +166,17 @@ TIMEOUT_SECONDS = 10
 ## API Reference
 
 POST /api/auth/login
+
 Request:  { "username": "user1", "password": "pass1" }
 Response: { "token": "...", "containerId": "abc123" }
+
 POST /api/auth/logout
+
 Request:  { "token": "..." }
 Response: { "message": "Container removed" }
+
 POST /api/execute
+
 Request:  { "token": "...", "code": "print('hello')", "language": "python" }
 Response: { "output": "hello\n", "error": null, "exitCode": 0 }
 
@@ -205,15 +210,15 @@ docker kill dockerlab-user1
 
 ## Docker Commands Reference
 
-# View running containers
+- View running containers
 docker ps
-# View resource usage
+- View resource usage
 docker stats
-# Kill a specific container
+- Kill a specific container
 docker kill <container_id>
-# Remove all stopped containers
+- Remove all stopped containers
 docker container prune
-# View logs of a container
+- View logs of a container
 docker logs <container_id>
 
 ## Security Considerations
@@ -229,13 +234,12 @@ This project is designed for educational use. For production consider:
 
 ## Tech Stack
 
-Layer                                  Technology
-Frontend                               HTML5, CSS3, JavaScript
-Backend                                ASP.NET Core 8, C#
-Worker                                 Python 3.11, Flask/HTTP server
-Runtime                                Docker Engine
-C# Execution                           .NET SDK
-Container Comms                        HTTP (loopback port per container)
+Frontend - HTML5, CSS3, JavaScript
+Backend - ASP.NET Core 8, C#
+Worker - Python 3.11, Flask/HTTP server
+Runtime - Docker Engine
+C# Execution - .NET SDK
+Container Comms - HTTP (loopback port per container)
 
 ## Author
 
